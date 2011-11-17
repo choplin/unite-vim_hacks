@@ -119,6 +119,7 @@ function! s:print_buf(data)
   silent 1 put =a:data
   silent 1,2 delete _
   silent $-2,$ delete _
+  call cursor(1,1)
 endfunction
 
 function! s:render(dom, pre)
