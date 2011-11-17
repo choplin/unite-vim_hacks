@@ -7,7 +7,7 @@ This script requires these libraries.
     https://github.com/mattn/webapi-vim
 
 * vim-openbuf
-  https://github.com/thinca/vim-openbuf
+    https://github.com/thinca/vim-openbuf
 
 Todo
 ====
