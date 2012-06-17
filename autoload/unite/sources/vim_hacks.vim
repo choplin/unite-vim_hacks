@@ -77,7 +77,7 @@ function! s:action_table.show.func(candidate)
   let scrape = ['h1', ['ul', {'class':'info'}], ['div', {'class':'textBody'}]]
 
   let content = s:get_vim_hacks_body(a:candidate.action__path)
-  let dom = html#parse(iconv(content, 'utf-8', &encoding))
+  let dom = webapi#html#parse(iconv(content, 'utf-8', &encoding))
 
   let ret = []
   for s in scrape
@@ -94,14 +94,14 @@ function! s:action_table.show.func(candidate)
 endfunction
 
 function! s:get_vim_hacks_body(url)
-  let content = http#get(a:url).content
+  let content = webapi#http#get(a:url).content
   let content = matchstr(content, '\zs<body[^>]\+>.*</body>\ze')
   return content
 endfunction
 
 function! s:get_vim_hacks()
   let content = s:get_vim_hacks_body('http://vim-users.jp/vim-hacks-project/')
-  let dom = html#parse(iconv(content, 'utf-8', &encoding))
+  let dom = webapi#html#parse(iconv(content, 'utf-8', &encoding))
   let ret = []
   for li in dom.findAll('ul')[1].childNodes('li')
     let url = li.find('a').attr['href']
@@ -125,7 +125,7 @@ endfunction
 function! s:render(dom, pre)
   let dom = a:dom
   if type(dom) == 0 || type(dom) == 1 || type(dom) == 5
-    let html = html#decodeEntityReference(dom)
+    let html = webapi#html#decodeEntityReference(dom)
     let html = substitute(html, '\r', '', 'g')
     if a:pre == 0
       let html = substitute(html, '\n\+\s*', '', 'g')
