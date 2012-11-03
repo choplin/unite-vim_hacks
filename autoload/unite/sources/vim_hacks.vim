@@ -77,7 +77,7 @@ function! s:action_table.show.func(candidate)
   let scrape = ['h1', ['ul', {'class':'info'}], ['div', {'class':'textBody'}]]
 
   let content = s:get_vim_hacks_body(a:candidate.action__path)
-  let dom = html#parse(iconv(content, 'utf-8', &encoding))
+  let dom = webapi#html#parse(iconv(content, 'utf-8', &encoding))
 
   let ret = []
   for s in scrape
@@ -90,18 +90,18 @@ function! s:action_table.show.func(candidate)
     unlet s
   endfor
   
-  call s:print_buf(s:render(ret, 0))
+  call s:print_buf(wwwrenderer#render_dom(ret))
 endfunction
 
 function! s:get_vim_hacks_body(url)
-  let content = http#get(a:url).content
+  let content = webapi#http#get(a:url).content
   let content = matchstr(content, '\zs<body[^>]\+>.*</body>\ze')
   return content
 endfunction
 
 function! s:get_vim_hacks()
   let content = s:get_vim_hacks_body('http://vim-users.jp/vim-hacks-project/')
-  let dom = html#parse(iconv(content, 'utf-8', &encoding))
+  let dom = webapi#html#parse(iconv(content, 'utf-8', &encoding))
   let ret = []
   for li in dom.findAll('ul')[1].childNodes('li')
     let url = li.find('a').attr['href']
@@ -120,39 +120,4 @@ function! s:print_buf(data)
   silent 1,2 delete _
   silent $-2,$ delete _
   call cursor(1,1)
-endfunction
-
-function! s:render(dom, pre)
-  let dom = a:dom
-  if type(dom) == 0 || type(dom) == 1 || type(dom) == 5
-    let html = html#decodeEntityReference(dom)
-    let html = substitute(html, '\r', '', 'g')
-    if a:pre == 0
-      let html = substitute(html, '\n\+\s*', '', 'g')
-    endif
-    let html = substitute(html, '\t', '  ', 'g')
-    return html
-  elseif type(dom) == 3
-    let html = ''
-    for d in dom
-      let html .= s:render(d, a:pre)
-      unlet d
-    endfor
-    return html
-  elseif type(dom) == 4
-    if empty(dom)
-      return ""
-    endif
-    if dom.name != 'script' && dom.name != 'style' && dom.name != 'head'
-      let html = s:render(dom.child, a:pre || dom.name == 'pre')
-      if dom.name =~ '^h[1-6]$' || dom.name == 'br' || dom.name == 'dt' || dom.name == 'dl' || dom.name == 'li' || dom.name == 'p'
-        let html = "\n".html."\n"
-      endif
-      if dom.name == 'pre' || dom.name == 'blockquote'
-        let html = "\n  ".substitute(html, "\n", "\n  ", 'g')."\n"
-      endif
-      return html
-    endif
-    return ''
-  endif
 endfunction
