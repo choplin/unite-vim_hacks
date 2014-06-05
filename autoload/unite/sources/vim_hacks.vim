@@ -52,7 +52,7 @@ function! s:source.gather_candidates(args, context)
     let hacks = s:get_vim_hacks()
     for hack in hacks
       call add(s:cache, {
-      \ 'word':   hack['title'],
+      \ 'word':   hack['date'] . ' ' . hack['title'],
       \ 'kind':   'uri',
       \ 'source': 'vim_hacks',
       \ 'action__path': hack['url']
@@ -74,7 +74,7 @@ let s:action_table.show = {
 let s:source.action_table.uri = s:action_table
 
 function! s:action_table.show.func(candidate)
-  let scrape = ['h1', ['ul', {'class':'info'}], ['div', {'class':'textBody'}]]
+  let scrape = ['h1', ['div', {'class':'post'}]]
 
   let content = s:get_vim_hacks_body(a:candidate.action__path)
   let dom = webapi#html#parse(iconv(content, 'utf-8', &encoding))
@@ -95,20 +95,15 @@ endfunction
 
 function! s:get_vim_hacks_body(url)
   let content = webapi#http#get(a:url).content
-  let content = matchstr(content, '\zs<body[^>]\+>.*</body>\ze')
+  let content = matchstr(content, '\zs<body[^>]*>.*<\/body>\ze')
   return content
 endfunction
 
 function! s:get_vim_hacks()
-  let content = s:get_vim_hacks_body('http://vim-users.jp/vim-hacks-project/')
-  let dom = webapi#html#parse(iconv(content, 'utf-8', &encoding))
-  let ret = []
-  for li in dom.findAll('ul')[1].childNodes('li')
-    let url = li.find('a').attr['href']
-    call add(ret, {'url':url, 'title':li.value()})
-    unlet li
-  endfor
-  return ret
+  let url = "http://vim-jp.org/vim-users-jp/hack.json"
+  let content = iconv(webapi#http#get(url).content, 'utf-8', &encoding)
+  let ret = webapi#html#decodeEntityReference(content)
+  return webapi#json#decode(ret)
 endfunction
 
 function! s:print_buf(data)
