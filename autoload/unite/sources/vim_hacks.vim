@@ -101,7 +101,7 @@ endfunction
 
 function! s:get_vim_hacks()
   let url = "http://vim-jp.org/vim-users-jp/hack.json"
-  let content = iconv(webapi#http#get(url).content, 'utf-8', &encoding)
+  let content = webapi#http#get(url).content
   let ret = webapi#html#decodeEntityReference(content)
   return webapi#json#decode(ret)
 endfunction
